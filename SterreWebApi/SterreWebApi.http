@@ -1,0 +1,6 @@
+@SterreWebApi_HostAddress = http://localhost:5168
+
+GET {{SterreWebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
