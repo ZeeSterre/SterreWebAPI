@@ -9,9 +9,9 @@ namespace SterreWebApi.Controllers
     [Route("[controller]")]
     public class Environment2DController : ControllerBase
     {
-        private readonly Environment2DRepository _repository;
+        private readonly IEnvironment2DRepository _repository;
 
-        public Environment2DController(Environment2DRepository repository)
+        public Environment2DController(IEnvironment2DRepository repository)
         {
             _repository = repository;
         }
@@ -19,18 +19,18 @@ namespace SterreWebApi.Controllers
         // GET: /Environment2D
         [HttpGet]
 
-        public ActionResult<IEnumerable<Environment2D>> GetAll()
+        public async Task<ActionResult<IEnumerable<Environment2D>>> GetAll()
         {
-            return Ok(_repository.GetAll());
+            return Ok(await _repository.GetAllAsync());
         }
 
         // GET: /Environment2D/{id}
 
         [HttpGet("{id}")]
 
-        public ActionResult<Environment2D> GetById(int id)
+        public async Task<ActionResult<Environment2D>> GetById(int id)
         {
-            var environment = _repository.GetById(id);
+            var environment = await _repository.GetByIdAsync(id);
             if (environment == null)
                 return NotFound("Environment not found");
 
@@ -41,24 +41,24 @@ namespace SterreWebApi.Controllers
 
         [HttpPost]
 
-        public ActionResult<Environment2D> Create([FromBody] Environment2D environment)
+        public async Task<ActionResult<Environment2D>> Create([FromBody] Environment2D environment)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var createdEnvironment = _repository.Add(environment);
+            var createdEnvironment = await _repository.AddAsync(environment);
             return CreatedAtAction(nameof(GetById), new { id = createdEnvironment.Id }, createdEnvironment);
         }
 
         // PUT: /Environment2D/{id}
         [HttpPut("{id}")]
 
-        public IActionResult Update(int id, [FromBody] Environment2D updatedEnvironment)
+        public async Task<IActionResult> Update(int id, [FromBody] Environment2D updatedEnvironment)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var success = _repository.Update(id, updatedEnvironment);
+            var success = await _repository.UpdateAsync(id, updatedEnvironment);
             if (!success)
                 return NotFound("Environment not found.");
 
@@ -69,9 +69,9 @@ namespace SterreWebApi.Controllers
 
         [HttpDelete("{id}")]
 
-        public IActionResult Delete (int id)
+        public async Task<IActionResult> Delete (int id)
         {
-            var success = _repository.Delete(id);
+            var success = await _repository.DeleteAsync(id);
             if (!success)
                 return NotFound("Environment not found.");
 

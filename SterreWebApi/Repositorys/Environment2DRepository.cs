@@ -1,48 +1,82 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.Data.SqlClient;
 using SterreWebApi.Models;
+using Dapper;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SterreWebApi.Repositorys
 {
-    public class Environment2DRepository
+    public class Environment2DRepository : IEnvironment2DRepository
     {
-        private static readonly List<Environment2D> _environments = new List<Environment2D>();
-        private static int _nextId = 1;
+        private readonly string _connectionString;
 
-        public IEnumerable<Environment2D> GetAll()
+        public Environment2DRepository(string connectionString)
         {
-            return _environments;
+            _connectionString = connectionString;
         }
 
-        public Environment2D? GetById(int id)
+        public async Task<IEnumerable<Environment2D>> GetAllAsync()
         {
-            return _environments.FirstOrDefault(environment => environment.Id == id);
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                var query = "SELECT * FROM Environment2D";
+                return await connection.QueryAsync<Environment2D>(query);
+            }
         }
 
-        public Environment2D Add(Environment2D environment)
+        public async Task<Environment2D?> GetByIdAsync(int id)
         {
-            environment.Id = _nextId++;
-            _environments.Add(environment);
-            return environment;
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                var query = "SELECT * FROM Environment2D WHERE Id = @Id";
+                return await connection.QueryFirstOrDefaultAsync<Environment2D>(query, new { Id = id });
+            }
         }
 
-        public bool Update(int id, Environment2D updateEnvironment)
+        public async Task<Environment2D> AddAsync(Environment2D environment)
         {
-            var existing = _environments.FirstOrDefault(environment => environment.Id == id);
-            if (existing == null) return false;
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                var query = @"
+                    INSERT INTO Environment2D (Name, MaxLength, MaxHeight)
+                    VALUES (@Name, @MaxLength, @MaxHeight);
+                    SELECT CAST(SCOPE_IDENTITY() as int);";
 
-            existing.Name = updateEnvironment.Name;
-            existing.MaxLength = updateEnvironment.MaxLength;
-            existing.MaxHeight = updateEnvironment.MaxHeight;
-            return true;
+                int newId = await connection.QuerySingleAsync<int>(query, environment);
+                environment.Id = newId;
+                return environment;
+            }
         }
 
-        public bool Delete(int id)
+        public async Task<bool> UpdateAsync(int id, Environment2D updateEnvironment)
         {
-            var environment = _environments.FirstOrDefault(e => e.Id == id);
-            if (environment == null) return false;
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                var query = @"
+                    UPDATE Environment2D 
+                    SET Name = @Name, MaxLength = @MaxLength, MaxHeight = @MaxHeight 
+                    WHERE Id = @Id";
 
-            _environments.Remove(environment);
-            return true;
+                int rowsAffected = await connection.ExecuteAsync(query, new
+                {
+                    updateEnvironment.Name,
+                    updateEnvironment.MaxLength,
+                    updateEnvironment.MaxHeight,
+                    Id = id
+                });
+
+                return rowsAffected > 0;
+            }
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                var query = "DELETE FROM Environment2D WHERE Id = @Id";
+                int rowsAffected = await connection.ExecuteAsync(query, new { Id = id });
+                return rowsAffected > 0;
+            }
         }
     }
 }
