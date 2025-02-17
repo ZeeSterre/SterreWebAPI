@@ -1,23 +1,24 @@
-using Dapper;
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.DependencyInjection;
-using System.Data;
 using SterreWebApi.Repositorys;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
+// Ensure authorization services are registered
+builder.Services.AddAuthorization();  // <-- This line adds the required authorization services
+
 builder.Services.AddOpenApi();
 
-var connectionString = builder.Configuration.GetConnectionString("SqlConnectionString");
+// Add any other required services, like database context, repositories, etc.
+var connectionString = builder.Configuration["SqlConnectionString"];
 
 if (string.IsNullOrEmpty(connectionString))
 {
-    throw new InvalidOperationException("Connection string is missing");
+    throw new InvalidOperationException("Connection string is missing or invalid.");
 }
+
+Console.WriteLine($"Connection String: {connectionString}"); // Debugging purpose
 
 // Register repositories with dependency injection
 builder.Services.AddTransient<IEnvironment2DRepository, Environment2DRepository>(provider => new Environment2DRepository(connectionString));
@@ -31,10 +32,11 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.MapGet("/", () => "Hello world, the API is up ");
+app.MapGet("/", () => "Hello world, the API is up");
 
 app.UseHttpsRedirection();
 
+// Make sure to add the authorization middleware
 app.UseAuthorization();
 
 app.MapControllers();
