@@ -1,2 +1,2 @@
-# Dit is mijn project: SterreWebApi:
+# Dit is mijn project: SterreWebApi
 ## **2025**
