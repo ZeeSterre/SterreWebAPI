@@ -1,1 +1,1 @@
-Yo welkom bij LU2
+Dit is mijn project
