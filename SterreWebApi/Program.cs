@@ -17,8 +17,6 @@ if (string.IsNullOrEmpty(connectionString))
     throw new InvalidOperationException("Connection string is missing or invalid.");
 }
 
-Console.WriteLine($"Connection String: {connectionString}");
-
 builder.Services.AddTransient<IEnvironment2DRepository, Environment2DRepository>(provider => new Environment2DRepository(connectionString));
 builder.Services.AddTransient<IObject2DRepository, Object2DRepository>(provider => new Object2DRepository(connectionString));
 
