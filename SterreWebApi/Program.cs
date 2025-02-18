@@ -8,7 +8,6 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddOpenApi();
 
-builder.Configuration.AddJsonFile("SecretSql.json", optional: false, reloadOnChange: true);
 
 var connectionString = builder.Configuration["SqlConnectionString"];
 
@@ -16,6 +15,8 @@ if (string.IsNullOrEmpty(connectionString))
 {
     throw new InvalidOperationException("Connection string is missing or invalid.");
 }
+
+Console.WriteLine(connectionString);
 
 builder.Services.AddTransient<IEnvironment2DRepository, Environment2DRepository>(provider => new Environment2DRepository(connectionString));
 builder.Services.AddTransient<IObject2DRepository, Object2DRepository>(provider => new Object2DRepository(connectionString));
