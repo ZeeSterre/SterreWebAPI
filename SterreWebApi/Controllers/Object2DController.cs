@@ -28,7 +28,7 @@ namespace SterreWebApi.Controllers
 
         [HttpGet("{id}")]
 
-        public async Task<ActionResult<Object2D>> GetById(int id)
+        public async Task<ActionResult<Object2D>> GetById(Guid id)
         {
             var object2D = await _repository.GetByIdAsync(id);
             if (object2D == null)
@@ -53,7 +53,7 @@ namespace SterreWebApi.Controllers
         // PUT: /Object2D/{id}
         [HttpPut("{id}")]
 
-        public async Task<IActionResult> Update(int id, [FromBody] Object2D updatedObject2D)
+        public async Task<IActionResult> Update(Guid id, [FromBody] Object2D updatedObject2D)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -69,7 +69,7 @@ namespace SterreWebApi.Controllers
 
         [HttpDelete("{id}")]
 
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(Guid id)
         {
             var success = await _repository.DeleteAsync(id);
             if (!success)

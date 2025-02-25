@@ -10,10 +10,12 @@ namespace SterreWebApi.Controllers
     public class Environment2DController : ControllerBase
     {
         private readonly IEnvironment2DRepository _repository;
+        private readonly IAuthenticationService _authenticationService;
 
-        public Environment2DController(IEnvironment2DRepository repository)
+        public Environment2DController(IEnvironment2DRepository repository, IAuthenticationService authenticationService)
         {
             _repository = repository;
+            _authenticationService = authenticationService;
         }
 
         // GET: /Environment2D
@@ -28,7 +30,7 @@ namespace SterreWebApi.Controllers
 
         [HttpGet("{id}")]
 
-        public async Task<ActionResult<Environment2D>> GetById(int id)
+        public async Task<ActionResult<Environment2D>> GetById(Guid id)
         {
             var environment = await _repository.GetByIdAsync(id);
             if (environment == null)
@@ -53,7 +55,7 @@ namespace SterreWebApi.Controllers
         // PUT: /Environment2D/{id}
         [HttpPut("{id}")]
 
-        public async Task<IActionResult> Update(int id, [FromBody] Environment2D updatedEnvironment)
+        public async Task<IActionResult> Update(Guid id, [FromBody] Environment2D updatedEnvironment)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -69,7 +71,7 @@ namespace SterreWebApi.Controllers
 
         [HttpDelete("{id}")]
 
-        public async Task<IActionResult> Delete (int id)
+        public async Task<IActionResult> Delete (Guid id)
         {
             var success = await _repository.DeleteAsync(id);
             if (!success)

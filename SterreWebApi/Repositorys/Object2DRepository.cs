@@ -1,5 +1,4 @@
 ﻿using Microsoft.Data.SqlClient;
-using Microsoft.AspNetCore.Mvc;
 using SterreWebApi.Models;
 using Dapper;
 
@@ -23,7 +22,7 @@ namespace SterreWebApi.Repositorys
             }
         }
 
-        public async Task<Object2D?> GetByIdAsync(int id)
+        public async Task<Object2D?> GetByIdAsync(Guid id)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -37,17 +36,16 @@ namespace SterreWebApi.Repositorys
             using (var connection = new SqlConnection(_connectionString))
             {
                 var query = @"
-                    INSERT INTO Object2D (PrefabId, PositionX, PositionY, ScaleX, ScaleY, RotationZ, SortingLayer)
-                    VALUES (@PrefabId, @PositionX, @PositionY, @ScaleX, @ScaleY, @RotationZ, @SortingLayer);
-                    SELECT CAST(SCOPE_IDENTITY() as int);";
+                    INSERT INTO Object2D (Id, PrefabId, PositionX, PositionY, ScaleX, ScaleY, RotationZ, SortingLayer)
+                    VALUES (@Id, @PrefabId, @PositionX, @PositionY, @ScaleX, @ScaleY, @RotationZ, @SortingLayer);";
 
-                int newId = await connection.QuerySingleAsync<int>(query, object2D);
-                object2D.Id = newId;
+                object2D.Id = Guid.NewGuid();
+                await connection.ExecuteAsync(query, object2D);
                 return object2D;
             }
         }
 
-        public async Task<bool> UpdateAsync(int id, Object2D updateObject2D)
+        public async Task<bool> UpdateAsync(Guid id, Object2D updateObject2D)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -73,7 +71,7 @@ namespace SterreWebApi.Repositorys
             }
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(Guid id)
         {
             using (var connection = new SqlConnection(_connectionString))
             {

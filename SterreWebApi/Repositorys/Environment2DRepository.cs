@@ -24,7 +24,7 @@ namespace SterreWebApi.Repositorys
             }
         }
 
-        public async Task<Environment2D?> GetByIdAsync(int id)
+        public async Task<Environment2D?> GetByIdAsync(Guid id)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -38,17 +38,16 @@ namespace SterreWebApi.Repositorys
             using (var connection = new SqlConnection(_connectionString))
             {
                 var query = @"
-                    INSERT INTO Environment2D (Name, MaxLength, MaxHeight)
-                    VALUES (@Name, @MaxLength, @MaxHeight);
-                    SELECT CAST(SCOPE_IDENTITY() as int);";
+                    INSERT INTO Environment2D (Id, Name, MaxLength, MaxHeight)
+                    VALUES (@Id, @Name, @MaxLength, @MaxHeight);";
 
-                int newId = await connection.QuerySingleAsync<int>(query, environment);
-                environment.Id = newId;
+                environment.Id = Guid.NewGuid();
+                await connection.ExecuteAsync(query, environment);
                 return environment;
             }
         }
 
-        public async Task<bool> UpdateAsync(int id, Environment2D updateEnvironment)
+        public async Task<bool> UpdateAsync(Guid id, Environment2D updateEnvironment)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -69,7 +68,7 @@ namespace SterreWebApi.Repositorys
             }
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(Guid id)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -78,5 +77,6 @@ namespace SterreWebApi.Repositorys
                 return rowsAffected > 0;
             }
         }
+
     }
 }
