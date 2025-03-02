@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Identity;
 using SterreWebApi.Repositorys;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-//builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -17,6 +19,20 @@ builder.Services.AddTransient<IAuthenticationService, AspNetIdentityAuthenticati
 builder.Services.AddSingleton<IUserInfoRepository>(new UserInfoRepository(connectionString));
 builder.Services.AddTransient<IEnvironment2DRepository, Environment2DRepository>(provider => new Environment2DRepository(connectionString));
 builder.Services.AddTransient<IObject2DRepository, Object2DRepository>(provider => new Object2DRepository(connectionString));
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+      .AddJwtBearer(options =>
+      {
+          options.TokenValidationParameters = new TokenValidationParameters
+          {
+              ValidateIssuer = true,
+              ValidateAudience = true,
+              ValidateLifetime = true,
+              ValidIssuer = "SterreWebAPI",
+              ValidAudience = "SterreWebAPI",
+              IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(connectionString))
+          };
+      });
 builder.Services.AddHttpContextAccessor();
 
 builder.Services
@@ -92,28 +108,49 @@ app.MapPost("/account/register", async (RegisterRequest request, UserManager<App
 app.MapPost("/account/login", async (LoginRequest request, SignInManager<AppUser> signInManager, UserManager<AppUser> userManager) =>
 {
     if (signInManager.Context.User?.Identity?.IsAuthenticated == true)
-    { 
-        return Results.BadRequest("User is already logged in.");
+    {
+        return Results.Json(new LoginResponse
+        {
+            Message = "User is already logged in."
+        });
     }
 
     if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.Password))
     {
-        return Results.BadRequest("Username and password must be provided.");
+        return Results.Json(new LoginResponse
+        {
+            Message = "Username and password must be provided."
+        });
     }
 
     var user = await userManager.FindByNameAsync(request.UserName);
     if (user == null)
     {
-        return Results.BadRequest("Invalid username or password.");
+        return Results.Json(new LoginResponse
+        {
+            Message = "Invalid username or password."
+        });
     }
 
     var result = await signInManager.PasswordSignInAsync(request.UserName, request.Password, false, false);
     if (!result.Succeeded)
     {
-        return Results.BadRequest("Invalid username or password.");
+        return Results.Json(new LoginResponse
+        {
+            Message = "Invalid username or password."
+        });
     }
-    return Results.Ok("Login successful!");
+
+    var tokenGenerator = new JwtTokenGenerator(connectionString);
+    var token = tokenGenerator.GenerateToken(request.UserName);
+
+    return Results.Json(new LoginResponse
+    {
+        Message = "Login successful!",
+        Token = token
+    });
 });
+
 
 app.MapPost("/account/logout", async (SignInManager<AppUser> signInManager) =>
 {

@@ -26,3 +26,9 @@ public class LoginRequest
     [Required]
     public string Password { get; set; }
 }
+
+public class LoginResponse
+{
+    public string? Message { get; set; }
+    public string? Token { get; set; }
+}
