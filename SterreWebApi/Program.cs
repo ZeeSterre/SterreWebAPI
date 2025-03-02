@@ -109,7 +109,7 @@ app.MapPost("/account/login", async (LoginRequest request, SignInManager<AppUser
 {
     if (signInManager.Context.User?.Identity?.IsAuthenticated == true)
     {
-        return Results.Json(new LoginResponse
+        return Results.BadRequest(new LoginResponse
         {
             Message = "User is already logged in."
         });
@@ -117,7 +117,7 @@ app.MapPost("/account/login", async (LoginRequest request, SignInManager<AppUser
 
     if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.Password))
     {
-        return Results.Json(new LoginResponse
+        return Results.BadRequest(new LoginResponse
         {
             Message = "Username and password must be provided."
         });
@@ -126,7 +126,7 @@ app.MapPost("/account/login", async (LoginRequest request, SignInManager<AppUser
     var user = await userManager.FindByNameAsync(request.UserName);
     if (user == null)
     {
-        return Results.Json(new LoginResponse
+        return Results.BadRequest(new LoginResponse
         {
             Message = "Invalid username or password."
         });
@@ -135,7 +135,7 @@ app.MapPost("/account/login", async (LoginRequest request, SignInManager<AppUser
     var result = await signInManager.PasswordSignInAsync(request.UserName, request.Password, false, false);
     if (!result.Succeeded)
     {
-        return Results.Json(new LoginResponse
+        return Results.BadRequest(new LoginResponse
         {
             Message = "Invalid username or password."
         });
