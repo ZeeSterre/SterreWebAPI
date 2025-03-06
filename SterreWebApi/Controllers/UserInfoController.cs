@@ -92,6 +92,10 @@ namespace SterreWebApi.Controllers
         {
             try
             {
+                if (request == null)
+                {
+                    return BadRequest("Invalid request data.");
+                }
                 var userIdString = _authenticationService.GetCurrentAuthenticatedUserId();
                 if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
                     return Unauthorized("User is not authenticated.");
@@ -125,23 +129,35 @@ namespace SterreWebApi.Controllers
         {
             try
             {
+                if (environmentId == Guid.Empty)
+                {
+                    return BadRequest("Invalid environment ID.");
+                }
+
                 var userId = _authenticationService.GetCurrentAuthenticatedUserId();
 
                 if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var parsedUserId))
+                {
                     return Unauthorized("User is not authenticated.");
+                }
 
                 var result = await _userInfoRepository.DeleteEnvironment(environmentId, parsedUserId);
 
                 if (result)
+                {
                     return Ok("Environment deleted successfully.");
+                }
                 else
+                {
                     return NotFound("Environment not found or does not belong to the user.");
+                }
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occurred while fetching user environments: {ex.Message}");
+                return StatusCode(500, $"An error occurred while deleting the environment: {ex.Message}");
             }
         }
+
 
         // GET: /object2d/{environment2dId}/all
         [HttpGet("{environmentId}/allObjects")]
